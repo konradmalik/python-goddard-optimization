@@ -7,6 +7,8 @@
 
 This problem concerns controlling a rocket's thrust in such a way that it will archive the greatest height. There is no contraint on time and in the whole case just a one (vertical) direction is taken into consideration. 
 
+Please note that github renders latex in ipynb in a different way than local jupyter. One issue that I noticed is that equations are wrongly numbered when viewing my notebook on github.
+
 ## Required packages:
 OpenGoddard, numpy, matplotlib
 
