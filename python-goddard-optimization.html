@@ -11808,7 +11808,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Formal-problem-statement:">Formal problem statement:<a class="anchor-link" href="#Formal-problem-statement:">&#182;</a></h2><h6 id="We-assume-that-our-equations-of-motion-are-nondimensionalized-and-normalized.-That-is-they-are-not-realistic-but-can-be-changed/transformed-to-such.">We assume that our equations of motion are nondimensionalized and normalized. That is they are not realistic but can be changed/transformed to such.<a class="anchor-link" href="#We-assume-that-our-equations-of-motion-are-nondimensionalized-and-normalized.-That-is-they-are-not-realistic-but-can-be-changed/transformed-to-such.">&#182;</a></h6>
+<h2 id="Formal-problem-statement:">Formal problem statement:<a class="anchor-link" href="#Formal-problem-statement:">&#182;</a></h2><h6 id="We-assume-that-our-equations-of-motion-are-nondimensionalized-and-normalized.-That-is-they-are-not-realistic-but-can-be-changed/transformed-to-such.-Examplary-normalisation-process-can-be-found-in-Tsiotras-work-(in-References).">We assume that our equations of motion are nondimensionalized and normalized. That is they are not realistic but can be changed/transformed to such. Examplary normalisation process can be found in Tsiotras work (in References).<a class="anchor-link" href="#We-assume-that-our-equations-of-motion-are-nondimensionalized-and-normalized.-That-is-they-are-not-realistic-but-can-be-changed/transformed-to-such.-Examplary-normalisation-process-can-be-found-in-Tsiotras-work-(in-References).">&#182;</a></h6>
 </div>
 </div>
 </div>
@@ -11861,7 +11861,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Additional needed constants parameters, and :</p>
+<p>Additional needed constants parameters, and formulas:</p>
 <ul>
 <li>$T_c = 3.5$</li>
 <li>$H_c = 500$</li>
@@ -11893,7 +11893,7 @@ div#notebook {
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>As density and the gravitational constant are dependant on altitude, we will use simplified models for $D(v,h)$ and $g$:</p>
 <ul>
-<li>$D(v,h) = D_c v^2 exp(-H_c \frac{h-h(0)}{h(0)}$</li>
+<li>$D(v,h) = D_c v^2 exp(-H_c \frac{h-h(0)}{h(0)})$</li>
 <li>$g(h) = g(0) (\frac{h(0)}{h})^2$</li>
 </ul>
 
@@ -12071,13 +12071,18 @@ OpenGoddard, numpy, matplotlib</p>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Necessary imports:</p>
+<ul>
+<li>numpy: general scientific computing</li>
+<li>matplotlib: library for plotting</li>
+<li>OpenGoddard: library for solving optimization problems in python</li>
+</ul>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -12095,18 +12100,20 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We define a class "Rocket" with initial/boundary conditions as specified in our Formal Problem Statement:</p>
+<p>We define a class "Rocket" with initial/boundary conditions as specified in our Formal Problem Statement. This class represents a real rocket object with attributes such as height, velocity, mass, drag, thrust etc.</p>
+<p>Coefficients are chosen based on OpenGoddard examples and can be freely changed.</p>
+<p>Equations for drag coefficient, maximum thrust etc. were listed in "Formal Problem Statement" under "Additional needed constants parameters".</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">Rocket</span><span class="p">:</span>
-    <span class="n">g0</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Gravity accel at surface</span>
+    <span class="n">g0</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Gravity acceleration at the surface</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Initial height</span>
@@ -12131,34 +12138,53 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We define the dynamics of our model:</p>
+<p>We define the dynamics of our model. The inputs to this function need to be:</p>
+<ul>
+<li>prob : the Problem object, representing the whole optimisation problem that we are calculating</li>
+<li>obj : the object that is controller and which state is optimised. In this case it is a Rocket class</li>
+<li>section : additional parameter needed by this library, represents a given time-section (timestep)</li>
+</ul>
+<p>The problem class is not initialized yet. It will be done after defining all neccessary functions and they will take it as an argument.</p>
+<p>Firstly the state variables $h$, $v$ and $m$ are assigned to the "Problem" class as "states". The "Problem" class in OpenGoddard is an abstraction representing the actual problem we want to solve. Thus, it is neccessary to provide state variables.</p>
+<p>Then, under the "control" comment, we are assigning control variables to the same Problem class. In this case the only control we have is thrust $T$.</p>
+<p>Next, we take the necessary parameters from the defined earlier Rocket class.</p>
+<p>In order to fully describe our dynamic equations, we need to define "additional formulas" for drag, which is dependent on the state variables, and gravity constant, which changes with altitude.</p>
+<p>The function returns a Dynamics class with dynamic equations defined below.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">dynamics</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">section</span><span class="p">):</span>
-    <span class="c1"># state</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span>
-    <span class="c1"># control</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span>
+    <span class="c1"># retrieve states from Problem class</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span> <span class="c1"># height</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span> <span class="c1"># velocity</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span> <span class="c1"># mass</span>
+    
+    <span class="c1"># retrieve control from problem</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span> <span class="c1"># control (thrust)</span>
 
-    <span class="n">Dc</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">Dc</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">c</span>
-    <span class="n">drag</span> <span class="o">=</span> <span class="n">Dc</span> <span class="o">*</span> <span class="n">v</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">obj</span><span class="o">.</span><span class="n">Hc</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span> <span class="o">/</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">g0</span> <span class="o">*</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">H0</span> <span class="o">/</span> <span class="n">h</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="c1"># retrieve Rocket class objects</span>
+    <span class="n">Dc</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">Dc</span> <span class="c1"># drag coefficient as defined in Rocket class</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">c</span> <span class="c1"># specific impulse as defined in Rocket class</span>
+    <span class="n">g0</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">g0</span> <span class="c1"># gravity constant as defined in Rocket class</span>
+    <span class="n">H0</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span> <span class="c1"># initial height as defined in Rocket class</span>
+    <span class="n">Hc</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">Hc</span> <span class="c1"># height constant as defined in Rocket class</span>
+    
+    <span class="c1"># define additional formulas</span>
+    <span class="n">drag</span> <span class="o">=</span> <span class="n">Dc</span> <span class="o">*</span> <span class="n">v</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">Hc</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">H0</span><span class="p">)</span> <span class="o">/</span> <span class="n">H0</span><span class="p">)</span> <span class="c1"># drag equation</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">g0</span> <span class="o">*</span> <span class="p">(</span><span class="n">H0</span> <span class="o">/</span> <span class="n">h</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="c1"># gravity constant </span>
 
-    <span class="n">dx</span> <span class="o">=</span> <span class="n">Dynamics</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span>
-    <span class="n">dx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-    <span class="n">dx</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">drag</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span> <span class="o">-</span> <span class="n">g</span>
-    <span class="n">dx</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">T</span> <span class="o">/</span> <span class="n">c</span>
-    <span class="k">return</span> <span class="n">dx</span><span class="p">()</span>
+    <span class="c1"># final dynamic equations definition</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">Dynamics</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">section</span><span class="p">)</span> <span class="c1"># Dynamics class initialization</span>
+    <span class="n">dx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="c1"># time-derivative of the first state (height)</span>
+    <span class="n">dx</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">drag</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span> <span class="o">-</span> <span class="n">g</span> <span class="c1"># time-derivative of the second state (velocity)</span>
+    <span class="n">dx</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">T</span> <span class="o">/</span> <span class="n">c</span> <span class="c1"># time-derivative of the third state (mass)</span>
+    <span class="k">return</span> <span class="n">dx</span><span class="p">()</span> <span class="c1"># returns the array of dynamic equations</span>
 </pre></div>
 
 </div>
@@ -12170,38 +12196,44 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Define the equality constraints (initial and boundary conditions):</p>
+<p>Next, we need to define the constraints for our optimisation problem. In OpenGoddard we need to separately define equality, and inequality constraints. The equality function defines equality constraints (initial and boundary conditions) and takes the following arguments:</p>
+<ul>
+<li>prob : the Problem object, representing the whole optimisation problem that we are calculating</li>
+<li>obj : the object that is controller and which state is optimised. In this case it is a Rocket class</li>
+</ul>
+<p>We need to retrieve already defined states and controls from the Problem object, initialize the Condition class and add equalities to this class. In particular these are just initial and end conditions.</p>
+<p>It returns a Conditions class with equalities that we define below.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">equality</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
-    <span class="c1"># state</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-    <span class="c1"># control</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="c1"># time</span>
-    <span class="n">tf</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">time_final</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># retrieve states from Problem class for all sections (all timesteps)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># height</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># velocity</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># mass</span>
+    
+    <span class="c1"># retrieve control from Problem class for all sections (all timesteps)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># thrust</span>
 
+    <span class="c1"># initialize condition class</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">()</span>
 
-    <span class="c1"># conditions</span>
-    <span class="c1"># initial</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">V0</span><span class="p">)</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">M0</span><span class="p">)</span>
-    <span class="c1"># end</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">Mf</span><span class="p">)</span>
+    <span class="c1"># add initial conditions</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span> <span class="c1"># initial height</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">V0</span><span class="p">)</span> <span class="c1"># initial velocity</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">M0</span><span class="p">)</span> <span class="c1"># initial mass</span>
+    
+    <span class="c1"># add final conditions </span>
+    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">)</span> <span class="c1"># zero velocity</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">Mf</span><span class="p">)</span> <span class="c1"># final mass equal to mass of empty Rocket</span>
 
-    <span class="k">return</span> <span class="n">result</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">()</span> <span class="c1"># return these conditions</span>
 </pre></div>
 
 </div>
@@ -12213,38 +12245,43 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Define the inequality constraints:</p>
+<p>An analogous function has to be defined for inequality constraints. It takes the same inputs and returns the Condition class but this time it contains only inequality contraints.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">inequality</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
-    <span class="c1"># state</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-    <span class="c1"># control</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="c1"># time</span>
-    <span class="n">tf</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">time_final</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># retrieve states from Problem class for all sections (all timesteps)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># height</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># velocity</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># mass</span>
+    
+    <span class="c1"># retrieve control from Problem class for all sections (all timesteps)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># thrust</span>
+    
+    <span class="c1"># retrieve time from the Problem class &quot;prob&quot;</span>
+    <span class="n">tf</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">time_final</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># final time</span>
 
+    <span class="c1"># initialize condition class</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">()</span>
-    <span class="c1"># lower bounds</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="c1"># positive velocity</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">Mf</span><span class="p">)</span> <span class="c1"># mass cannot be lower than the final mass (empty rocket)</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="c1"># positive thrust</span>
+    
+    <span class="c1"># add lower bound conditions</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span> <span class="c1"># height cannot be lower than initial</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="c1"># velocity must be positive</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">Mf</span><span class="p">)</span> <span class="c1"># mass cannot be lower than the final mass of an empty rocket</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="c1"># thrust must be positive</span>
     <span class="n">result</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span> <span class="c1"># assume that final time cannot be lower than 0.1 for stability</span>
-    <span class="c1"># upper bounds</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">M0</span><span class="p">)</span> <span class="c1"># mass not larger than the initial mass</span>
-    <span class="n">result</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">T_max</span><span class="p">)</span> <span class="c1"># thrust not larger than the maximal thrust</span>
+    
+    <span class="c1"># add upper bound conditions</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">M0</span><span class="p">)</span> <span class="c1"># mass cannot be larger than the initial mass</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">T_max</span><span class="p">)</span> <span class="c1"># thrust cannot be larger than the maximal thrust</span>
 
-    <span class="k">return</span> <span class="n">result</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">()</span> <span class="c1"># return these conditions</span>
 </pre></div>
 
 </div>
@@ -12256,19 +12293,23 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Define the cost function as in eq. (1):</p>
+<p>Now we can define the cost function as we depicted in the eq. (1):</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">cost</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="c1"># retrieve height from Problem for all sections (all timesteps)</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># final altitude</span>
+    <span class="c1"># define const function (final height should be maximised)</span>
+    <span class="c1"># also note the minus sign, since this in OpenGoddard cost function is being minimised</span>
+    <span class="n">cost_function</span> <span class="o">=</span> <span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">cost_function</span> <span class="c1"># return this cost function</span>
 </pre></div>
 
 </div>
@@ -12280,20 +12321,23 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Starting-point-(initialization)">Starting point (initialization)<a class="anchor-link" href="#Starting-point-(initialization)">&#182;</a></h3>
+<h3 id="Starting-point-(initialization)">Starting point (initialization)<a class="anchor-link" href="#Starting-point-(initialization)">&#182;</a></h3><p>Now with defined all constraints, objects and the cost function, we can proceed to initialization of out problem and defining all the constants specific to our case.</p>
+<p>Below we set the time bounds, number of nodes (timesteps, this is a discretisation in time). We also need to set the number of state equations (3), number of controls (1) and the maximum number of iterations, after which calculations will be stopped if we won't find an optimal solution until then.</p>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">time_init</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span> <span class="c1"># initial and final time (arbitrary value)</span>
-<span class="n">n</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">]</span> <span class="c1"># number of nodes</span>
-<span class="n">num_states</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="c1"># number of states</span>
-<span class="n">num_controls</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># number of controls</span>
-<span class="n">max_iteration</span> <span class="o">=</span> <span class="mi">40</span> <span class="c1"># maximum number of iterations</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># set case specific constants</span>
+<span class="n">time_init</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span> <span class="c1"># initial and final time (arbitrary values)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">]</span> <span class="c1"># number of nodes (timesteps, discretisation in time)</span>
+<span class="n">num_states</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="c1"># number of states equations (3 - height, velocity, mass)</span>
+<span class="n">num_controls</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># number of controls (1 - thrust)</span>
+<span class="n">max_iteration</span> <span class="o">=</span> <span class="mi">40</span> <span class="c1"># maximum number of iterations after which calculations will stop</span>
 </pre></div>
 
 </div>
@@ -12305,14 +12349,14 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Initialize OpenGoddard <em>Problem</em> class (main entry point to our optimization:</p>
+<p>Now we can initialize the OpenGoddard <em>Problem</em> class (main entry point to our optimization) passing the values we defined above:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span><span class="n">time_init</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">num_states</span><span class="p">,</span> <span class="n">num_controls</span><span class="p">,</span> <span class="n">max_iteration</span><span class="p">)</span>
@@ -12327,14 +12371,14 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Initialize a <em>Rocket</em> object:</p>
+<p>The next step is to initialize a <em>Rocket</em> object defined earlier:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">obj</span> <span class="o">=</span> <span class="n">Rocket</span><span class="p">()</span>
@@ -12349,17 +12393,17 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>In order to be able to solve this optimization problem we need to initialze our state varables (make a initial guess about their profiles):</p>
+<p>In order to be able to solve this optimization problem we need to initialze our state varables (make a initial guess about their profiles). This is done in the cells below. We also plot these initial profiles just to visualize them.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># altitude profile</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># initial guess for the altitude profile</span>
 <span class="n">H_init</span> <span class="o">=</span> <span class="n">Guess</span><span class="o">.</span><span class="n">cubic</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.010</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 <span class="n">Guess</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="n">H_init</span><span class="p">,</span> <span class="s2">&quot;Altitude&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Altitude&quot;</span><span class="p">)</span>
 </pre></div>
@@ -12393,10 +12437,10 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># velocity</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># initial guess for the velocity profile</span>
 <span class="n">V_init</span> <span class="o">=</span> <span class="n">Guess</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 <span class="n">Guess</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="n">V_init</span><span class="p">,</span> <span class="s2">&quot;Velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Velocity&quot;</span><span class="p">)</span>
 </pre></div>
@@ -12430,10 +12474,10 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># mass profile</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># initial guess for the mass profile</span>
 <span class="n">M_init</span> <span class="o">=</span> <span class="n">Guess</span><span class="o">.</span><span class="n">cubic</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">M0</span><span class="p">,</span> <span class="o">-</span><span class="n">obj</span><span class="o">.</span><span class="n">Mc</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">Mf</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 <span class="n">Guess</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="n">M_init</span><span class="p">,</span> <span class="s2">&quot;Mass&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Mass&quot;</span><span class="p">)</span>
 </pre></div>
@@ -12467,10 +12511,10 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># thrust profile</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># initial guess for the thrust profile</span>
 <span class="n">T_init</span> <span class="o">=</span> <span class="n">Guess</span><span class="o">.</span><span class="n">cubic</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">Tc</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 <span class="n">Guess</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">time_all_section</span><span class="p">,</span> <span class="n">T_init</span><span class="p">,</span> <span class="s2">&quot;Thrust Guess&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;Thrust&quot;</span><span class="p">)</span>
 </pre></div>
@@ -12506,20 +12550,24 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Set our initial guessess as the initial input to our problem:</p>
+<p>Now take these guesses and set them as the initial input to our problem:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">prob</span><span class="o">.</span><span class="n">set_states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">H_init</span><span class="p">)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">set_states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">V_init</span><span class="p">)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">set_states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">M_init</span><span class="p">)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">set_controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_init</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Set the profiles for all timesteps using our initial guesses</span>
+<span class="c1"># for states</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">set_states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">H_init</span><span class="p">)</span> <span class="c1"># for height</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">set_states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">V_init</span><span class="p">)</span> <span class="c1"># for velocity</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">set_states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">M_init</span><span class="p">)</span> <span class="c1"># for mass</span>
+
+<span class="c1"># for control</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">set_controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_init</span><span class="p">)</span> <span class="c1"># for thrust</span>
 </pre></div>
 
 </div>
@@ -12531,34 +12579,7 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Set up our problem using the dynamics and constraints that we defined earlier:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[27]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">prob</span><span class="o">.</span><span class="n">dynamics</span> <span class="o">=</span> <span class="p">[</span><span class="n">dynamics</span><span class="p">]</span> <span class="c1"># dynamics</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">knot_states_smooth</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># knot states (we are not using them)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="n">cost</span> <span class="c1"># cost function</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">cost_derivative</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># the derivative of the cost</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">equality</span> <span class="o">=</span> <span class="n">equality</span> <span class="c1"># equality constraints</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">inequality</span> <span class="o">=</span> <span class="n">inequality</span> <span class="c1"># inequality constraints</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Set up a function used to display results during optimization process:</p>
+<p>Now we need to take our initialized Problem class and set up the dynamics, cost, equalities and equalities that we defined as functions earlier.</p>
 
 </div>
 </div>
@@ -12568,8 +12589,38 @@ OpenGoddard, numpy, matplotlib</p>
 <div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># set the rest of inputs to our Problem class</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">dynamics</span> <span class="o">=</span> <span class="p">[</span><span class="n">dynamics</span><span class="p">]</span> <span class="c1"># set dynamics</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">knot_states_smooth</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># knot states (intermediate values, we are not using them so set as an empty array)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="n">cost</span> <span class="c1"># set the cost function</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">cost_derivative</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># the derivative of the cost (the cost is simply a final height, so no derivative - set None)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">equality</span> <span class="o">=</span> <span class="n">equality</span> <span class="c1"># set the equality constraints</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">inequality</span> <span class="o">=</span> <span class="n">inequality</span> <span class="c1"># set the inequality constraints</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>One last step is to define a function to format results during optimization process:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="inner_cell">
+    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">display_func</span><span class="p">():</span>
+    <span class="c1"># take height from the Problem class</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># print to console the actual final height</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max altitude: </span><span class="si">{0:.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
 </pre></div>
 
@@ -12582,7 +12633,12 @@ OpenGoddard, numpy, matplotlib</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Start-the-solver">Start the solver<a class="anchor-link" href="#Start-the-solver">&#182;</a></h3>
+<h3 id="Start-the-solver">Start the solver<a class="anchor-link" href="#Start-the-solver">&#182;</a></h3><p>As we now have all the prerequisites, we can start the solver.</p>
+<p>This solver allows to solve NLP problems and by default uses the <em>Sequential Least Squares Programming</em> optimiser.</p>
+<p>To cite the description of this algorithm:
+"SLSQP optimizer is a sequential least squares programming algorithm which uses the Han–Powell quasi–Newton method with a BFGS update of the B–matrix and an L1–test function in the step–length algorithm. The optimizer uses a slightly modified version of Lawson and Hanson’s NNLS nonlinear least-squares solver"</p>
+<p>More information about this optimiser can be found in References.</p>
+
 </div>
 </div>
 </div>
@@ -12617,16 +12673,18 @@ Iteration limit exceeded    (Exit mode 9)
 Iteration limit exceeded
 max altitude: 1.00806
 
----- iteration : 2 ----
+.
+.
+.
+
+---- iteration : 33 ----
 Iteration limit exceeded    (Exit mode 9)
-            Current function value: -1.0097000702717605
+            Current function value: -1.0128299882354883
             Iterations: 26
             Function evaluations: 10478
             Gradient evaluations: 26
 Iteration limit exceeded
-max altitude: 1.00970
-
-...
+max altitude: 1.01283
 
 ---- iteration : 34 ----
 Optimization terminated successfully.    (Exit mode 0)
@@ -12658,7 +12716,8 @@ max altitude: 1.01283
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Post-processing">Post processing<a class="anchor-link" href="#Post-processing">&#182;</a></h3>
+<h3 id="Post-processing">Post processing<a class="anchor-link" href="#Post-processing">&#182;</a></h3><p>Now as our optimisation has ended successfully, we can start to post-process results.</p>
+
 </div>
 </div>
 </div>
@@ -12666,20 +12725,25 @@ max altitude: 1.01283
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Extract states, control and time from the solved case:</p>
+<p>Firstly we need to extract states, control and time from the resolved Problem class:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># retrieved state variables from the solved case</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># height</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># velocity</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">states_all_section</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># mass</span>
+
+<span class="c1"># retrieved control variables from the solved case</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">controls_all_section</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># thrust</span>
+
+<span class="c1"># retrieved time from the solved case</span>
 <span class="n">time</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">time_update</span><span class="p">()</span>
 </pre></div>
 
@@ -12692,18 +12756,18 @@ max altitude: 1.01283
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Calculate necessary variables which cannot be explicitly extracted:</p>
+<p>We need also to calculate drag as in was not resolved explicitly during optimisation (but taken into consideration) and we want to visualize it along with thrust.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[44]:</div>
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">drag</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">Dc</span> <span class="o">*</span> <span class="n">v</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">obj</span><span class="o">.</span><span class="n">Hc</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.0</span><span class="p">)</span>
-<span class="n">g</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">g0</span> <span class="o">*</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">H0</span> <span class="o">/</span> <span class="n">h</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># calculate drag using the same formula as before</span>
+<span class="n">drag</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">Dc</span> <span class="o">*</span> <span class="n">v</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">obj</span><span class="o">.</span><span class="n">Hc</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span> <span class="o">/</span> <span class="n">obj</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12715,13 +12779,14 @@ max altitude: 1.01283
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Results-visualisation">Results visualisation<a class="anchor-link" href="#Results-visualisation">&#182;</a></h3>
+<h3 id="Results-visualisation">Results visualisation<a class="anchor-link" href="#Results-visualisation">&#182;</a></h3><p>We can now visualize all the results. Code below is needed only to plot the already computed and extracted results.</p>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[38]:</div>
+<div class="prompt input_prompt">In&nbsp;[35]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -12742,7 +12807,7 @@ max altitude: 1.01283
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[38]:</div>
+<div class="prompt output_prompt">Out[35]:</div>
 
 
 
@@ -12774,7 +12839,7 @@ max altitude: 1.01283
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[39]:</div>
+<div class="prompt input_prompt">In&nbsp;[36]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -12795,7 +12860,7 @@ max altitude: 1.01283
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[39]:</div>
+<div class="prompt output_prompt">Out[36]:</div>
 
 
 
@@ -12827,7 +12892,7 @@ max altitude: 1.01283
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[40]:</div>
+<div class="prompt input_prompt">In&nbsp;[37]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -12848,7 +12913,7 @@ max altitude: 1.01283
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[40]:</div>
+<div class="prompt output_prompt">Out[37]:</div>
 
 
 
@@ -12880,7 +12945,7 @@ max altitude: 1.01283
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="prompt input_prompt">In&nbsp;[38]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -12903,13 +12968,13 @@ max altitude: 1.01283
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[45]:</div>
+<div class="prompt output_prompt">Out[38]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>&lt;matplotlib.legend.Legend at 0x7f6d00cd5ba8&gt;</pre>
+<pre>&lt;matplotlib.legend.Legend at 0x7f6462f4c320&gt;</pre>
 </div>
 
 </div>
@@ -12949,7 +13014,8 @@ max altitude: 1.01283
 <h2 id="References">References<a class="anchor-link" href="#References">&#182;</a></h2><p>Tsiotras P., Kelley H.J., <em>Drag-law Effects in the Goddard Problem</em>, 1991</p>
 <p><em>Principles of Optimal Control</em>, Course notes, MIT, 2008</p>
 <p><em>Nonlinear Systems and Control</em>, Course notes, Automatic Control Laboratory, ETH Zurich, 2015</p>
-<p><em>OpenGoddard</em> library examples</p>
+<p><em>OpenGoddard</em> library examples and documentation <a href="https://istellartech.github.io/OpenGoddard/apis/OpenGoddard.html">https://istellartech.github.io/OpenGoddard/apis/OpenGoddard.html</a></p>
+<p><em>Sequential Quadratic Programming Methods</em>, P. Gill, E. Wong, 2010 <a href="https://www.ccom.ucsd.edu/~peg/papers/sqpReview.pdf">https://www.ccom.ucsd.edu/~peg/papers/sqpReview.pdf</a></p>
 
 </div>
 </div>
